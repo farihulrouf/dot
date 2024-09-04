@@ -1,0 +1,31 @@
+# Node.js dependencies
+/node_modules
+
+# Build output
+/dist
+/build
+/.next
+
+# TypeScript build output
+*.tsbuildinfo
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE/editor-specific files
+.vscode/
+.idea/
+
+# Mac-specific files
+*.DS_Store
+
+# Linux-specific files
+*~
