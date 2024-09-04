@@ -121,4 +121,30 @@ export class DataController {
     }
   }
 
+  async patchData(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const numericId = parseInt(id, 10);
+
+      if (isNaN(numericId)) {
+        return res.status(400).json({ message: 'Invalid ID.' });
+      }
+
+      const partialData = req.body;
+      const updatedData = await this.dataService.patchData(numericId, partialData);
+
+      if (!updatedData) {
+        return res.status(404).json({ message: 'Data not found.' });
+      }
+
+      res.json({
+        message: 'Data partially updated successfully.',
+        data: updatedData
+      });
+    } catch (error) {
+      console.error('Error partially updating data:', error);
+      res.status(500).json({ message: 'Failed to partially update data.' });
+    }
+  }
+
 }
