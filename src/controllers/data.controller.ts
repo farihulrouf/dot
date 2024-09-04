@@ -11,6 +11,44 @@ export class DataController {
     this.dataService = new DataService();
   }
 
+  async patchData(req: Request, res: Response) {
+    try {
+      console.log('Received PATCH data:', req.body); // Tambahkan logging
+  
+      const { id } = req.params;
+      const numericId = parseInt(id, 10);
+  
+      // Validasi ID
+      if (isNaN(numericId)) {
+        return res.status(400).json({ message: 'Invalid ID.' });
+      }
+  
+      const { title, body } = req.body;
+      const dataRepository = AppDataSource.getRepository(DataEntity);
+      const existingData = await dataRepository.findOneBy({ id: numericId });
+  
+      if (!existingData) {
+        return res.status(404).json({ message: 'Data not found.' });
+      }
+  
+      console.log('Existing data before update:', existingData);
+      console.log('Updating with:', { title, body });
+  
+      existingData.title = title !== undefined ? title : existingData.title;
+      existingData.body = body !== undefined ? body : existingData.body;
+  
+      const updatedData = await dataRepository.save(existingData);
+      res.json({
+        message: 'Data partially updated successfully.',
+        data: updatedData
+      });
+    } catch (error) {
+      console.error('Error updating data:', error);
+      res.status(500).json({ message: 'Failed to update data.' });
+    }
+  }
+  
+  
   async fetchData(req: Request, res: Response) {
     try {
       const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
@@ -36,7 +74,7 @@ export class DataController {
     }
   }
 
- 
+
   async createData(req: Request, res: Response) {
     try {
       const { title, body } = req.body;
@@ -59,11 +97,9 @@ export class DataController {
 
   async updateData(req: Request, res: Response) {
     try {
-      // Konversi ID dari parameter URL menjadi angka
       const { id } = req.params;
       const numericId = parseInt(id, 10);
 
-      // Validasi ID
       if (isNaN(numericId)) {
         return res.status(400).json({ message: 'Invalid ID.' });
       }
@@ -89,6 +125,7 @@ export class DataController {
       res.status(500).json({ message: 'Failed to update data.' });
     }
   }
+
 
   async deleteData(req: Request, res: Response) {
     try {
@@ -121,30 +158,5 @@ export class DataController {
     }
   }
 
-  async patchData(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const numericId = parseInt(id, 10);
-
-      if (isNaN(numericId)) {
-        return res.status(400).json({ message: 'Invalid ID.' });
-      }
-
-      const partialData = req.body;
-      const updatedData = await this.dataService.patchData(numericId, partialData);
-
-      if (!updatedData) {
-        return res.status(404).json({ message: 'Data not found.' });
-      }
-
-      res.json({
-        message: 'Data partially updated successfully.',
-        data: updatedData
-      });
-    } catch (error) {
-      console.error('Error partially updating data:', error);
-      res.status(500).json({ message: 'Failed to partially update data.' });
-    }
-  }
 
 }

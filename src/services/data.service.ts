@@ -49,10 +49,10 @@ export class DataService {
 
   async updateData(id: number, post: { title: string; body: string }): Promise<void> {
     const repository = AppDataSource.getRepository(DataEntity);
-    await repository.update(id, post);
-
-    // Clear cache karena data berubah
-    this.cache.del('posts');
+    const result = await repository.update(id, post);
+    if (result.affected === 0) {
+      throw new Error('Data not found.');
+    }
   }
 
   async deleteData(id: number): Promise<void> {
@@ -80,9 +80,17 @@ export class DataService {
     }
   }
 
-  async patchData(id: number, partialData: Partial<DataEntity>): Promise<DataEntity | null> {
+  async patchData(id: number, post: { title?: string; body?: string }): Promise<void> {
     const repository = AppDataSource.getRepository(DataEntity);
-    await repository.update(id, partialData);
-    return repository.findOneBy({ id });
-  }
+    const existingData = await repository.findOneBy({ id });
+
+    if (!existingData) {
+      throw new Error('Data not found.');
+    }
+
+    existingData.title = post.title !== undefined ? post.title : existingData.title;
+    existingData.body = post.body !== undefined ? post.body : existingData.body;
+
+    await repository.save(existingData);
+  }  
 }
